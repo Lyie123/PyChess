@@ -1,11 +1,29 @@
 from enum import Enum
 
+
 class Color(Enum):
     """
     Represent the owner of the figure
     """
     WHITE = 0
     BLACK = 1
+
+class Game:
+    """
+    """
+    def __init__(self):
+        self.player_white = Player(Color.WHITE)
+        self.player_black = Player(Color.BLACK)
+        self.board = Board()
+    
+    def move(self):
+        pass
+
+class Player:
+    """
+    """
+    def __init(self, color: Color):
+        self.color = color 
 
 class Board:
     """
@@ -23,14 +41,18 @@ class Board:
         self._board = []
         self.__init_fen(fen)
 
-    def __str__(self):
+    def __str__(self) -> str:
         # replace None with empty character
         buffer = [n if n is not None else ' ' for n in self._board]
-
         # chunk list into 8 pieces and join togehter as string
-        return '\n'.join([''.join(buffer[n*8:(n+1)*8]) for n in range(8)])
+        buffer = [''.join(buffer[n*8:(n+1)*8]) for n in range(8)]
+        # add row numbers to board
+        buffer = [''.join(map(str, i)) for i in zip(reversed(self._rows), buffer)] 
+        # add column names to board
+        buffer.append(''.join([' '] + self._columns))
+        return '\n'.join(buffer)
 
-    def __init_fen(self, fen: str):
+    def __init_fen(self, fen: str) -> None:
         """
         Create Board with position dependent of FEN string
         """
@@ -41,8 +63,7 @@ class Board:
             if n == '/':
                 pass
             elif n.isnumeric():
-                for pawn in range(int(n)):
-                    self._board.append(None)
+                self._board.extend([None for p in range(int(n))])
             else:
                 self._board.append(n)
 
