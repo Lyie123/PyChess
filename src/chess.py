@@ -1,4 +1,5 @@
 from enum import Enum
+from itertools import product
 
 
 class Color(Enum):
@@ -15,7 +16,7 @@ class Game:
         self.player_white = Player(Color.WHITE)
         self.player_black = Player(Color.BLACK)
         self.board = Board()
-    
+
     def move(self):
         pass
 
@@ -23,7 +24,7 @@ class Player:
     """
     """
     def __init(self, color: Color):
-        self.color = color 
+        self.color = color
 
 class Board:
     """
@@ -38,6 +39,7 @@ class Board:
     def __init__(self, fen: str = fen_starting_position):
         self._columns = list('ABCDEFGH')
         self._rows = list('12345678')
+        self._squares = { (j+m):(i*8+n) for i, j in enumerate(self._columns) for n, m in enumerate(self._rows) }
         self._board = []
         self.__init_fen(fen)
 
@@ -47,7 +49,7 @@ class Board:
         # chunk list into 8 pieces and join togehter as string
         buffer = [''.join(buffer[n*8:(n+1)*8]) for n in range(8)]
         # add row numbers to board
-        buffer = [''.join(map(str, i)) for i in zip(reversed(self._rows), buffer)] 
+        buffer = [''.join(map(str, i)) for i in zip(reversed(self._rows), buffer)]
         # add column names to board
         buffer.append(''.join([' '] + self._columns))
         return '\n'.join(buffer)
@@ -59,6 +61,8 @@ class Board:
         fen_sep = fen.split(' ')
 
         fen_board = fen_sep[0]
+
+        # extend fen string
         for n in fen_board:
             if n == '/':
                 pass
@@ -66,6 +70,14 @@ class Board:
                 self._board.extend([None for p in range(int(n))])
             else:
                 self._board.append(n)
+
+    def get_square(self, square: str):
+        """
+        """
+        if square not in self._squares:
+            raise ValueError
+        else:
+            return self._board[self._squares[square]]
 
 class Figure:
     """
