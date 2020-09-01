@@ -39,7 +39,7 @@ class Board:
     def __init__(self, fen: str = fen_starting_position):
         self._columns = list('ABCDEFGH')
         self._rows = list('12345678')
-        self._squares = { (j+m):(i*8+n) for i, j in enumerate(self._columns) for n, m in enumerate(self._rows) }
+        self._squares = { (m+j):(i*8+n) for i, j in enumerate(self._rows) for n, m in enumerate(self._columns) }
         self._board = []
         self.__init_fen(fen)
 
@@ -63,13 +63,19 @@ class Board:
         fen_board = fen_sep[0]
 
         # extend fen string
-        for n in fen_board:
-            if n == '/':
-                pass
-            elif n.isnumeric():
-                self._board.extend([None for p in range(int(n))])
-            else:
-                self._board.append(n)
+        board = []
+        for section in fen_board.split('/'):
+            buffer = []
+            for n in section:
+                if n.isnumeric():
+                    buffer.extend([None for p in range(int(n))])
+                else:
+                    buffer.append(n)
+            board.append(buffer)
+
+        board.reverse()
+        for n in board:
+            self._board.extend(n)
 
     def get_square(self, square: str):
         """
