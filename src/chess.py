@@ -1,6 +1,6 @@
 from enum import Enum
-from itertools import product
-
+from abc import ABC
+from typing import List
 
 class Color(Enum):
     """
@@ -12,10 +12,31 @@ class Color(Enum):
 class Game:
     """
     """
-    def __init__(self):
+    def __init__(self, fen: str):
+        self._fen = fen.split(' ')
         self.player_white = Player(Color.WHITE)
         self.player_black = Player(Color.BLACK)
-        self.board = Board()
+
+        # resolve fen
+
+        # piece placement
+        self.board = Board(self._fen[0])
+
+        # active color
+        if self._fen[1] == 'w':
+            self.active_color = Color.WHITE
+        elif self._fen[1] == 'b':
+            self.active_color = Color.BLACK
+        else:
+            raise ValueError
+
+        # castling availability
+
+        # en passant
+
+        # halfmove clock
+
+        # fullmove number
 
     def move(self):
         pass
@@ -36,12 +57,12 @@ class Board:
     """
     fen_starting_position = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
 
-    def __init__(self, fen: str = fen_starting_position):
+    def __init__(self, piece_placement: str):
         self._columns = list('ABCDEFGH')
         self._rows = list('12345678')
         self._squares = { (m+j):(i*8+n) for i, j in enumerate(self._rows) for n, m in enumerate(self._columns) }
         self._board = []
-        self.__init_fen(fen)
+        self.__init_board(piece_placement)
 
     def __str__(self) -> str:
         # replace None with empty character
@@ -54,9 +75,9 @@ class Board:
         buffer.append(''.join([' '] + self._columns))
         return '\n'.join(buffer)
 
-    def __init_fen(self, fen: str) -> None:
+    def __init_board(self, fen: str) -> None:
         """
-        Create Board with position dependent of FEN string
+        Create Board with position depending on FEN string
         """
         fen_sep = fen.split(' ')
 
@@ -79,33 +100,47 @@ class Board:
 
     def get_square(self, square: str):
         """
+        Return figure of the given square
         """
         if square not in self._squares:
             raise ValueError
         else:
             return self._board[self._squares[square]]
 
-class Figure:
+    def get_row(self, row: str) -> List[str]:
+        if row not in self._rows:
+            raise ValueError
+        list_index = [self._squares[n] for n in self._squares.keys() if row in n]
+        return [self._board[n] for n in list_index]
+    
+    def get_column(self, column: str) -> List[str]:
+        if column not in self._columns:
+            raise ValueError
+        list_index = [self._squares[n] for n in self._squares.keys() if column in n]
+        return [self._board[n] for n in list_index]
+
+
+class Piece(ABC):
     """
     Abstract class for chess figures
     """
     def __init__(self, color: Color):
         self.color = color
 
-class Pawn(Figure):
+class Pawn(Piece):
     pass
 
-class Rook(Figure):
+class Rook(Piece):
     pass
 
-class Bishop(Figure):
+class Bishop(Piece):
     pass
 
-class Knight(Figure):
+class Knight(Piece):
     pass
 
-class Queen(Figure):
+class Queen(Piece):
     pass
 
-class King(Figure):
+class King(Piece):
     pass
