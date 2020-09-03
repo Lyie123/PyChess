@@ -47,6 +47,52 @@ class Player:
     def __init(self, color: Color):
         self.color = color
 
+class PieceType(Enum):
+    """
+    """
+    PAWN = 'p'
+    ROOK = 'r'
+    BISHOP = 'b'
+    KNIGHT = 'n'
+    QUEEN = 'q'
+    KING = 'k'
+
+class Piece(ABC):
+    """
+    Abstract class for chess figures
+    """
+    def __init__(self, piece_type: PieceType, color: Color):
+        self.color = color
+        self.type = piece_type
+    
+    def __str__(self):
+        return str(self.type.value) if self.color == Color.BLACK else str(self.type.value).upper()
+
+class Pawn(Piece):
+    def __init__(self, color: Color):
+       super().__init__(PieceType.PAWN, color)
+
+class Rook(Piece):
+    def __init__(self, color: Color):
+        super().__init__(PieceType.ROOK, color)
+
+class Bishop(Piece):
+    def __init__(self, color: Color):
+        super().__init__(PieceType.BISHOP, color)
+
+class Knight(Piece):
+    def __init__(self, color: Color):
+        super().__init__(PieceType.KNIGHT, color)
+
+class Queen(Piece):
+    def __init__(self, color: Color):
+        super().__init__(PieceType.QUEEN, color)
+
+class King(Piece):
+    def __init__(self, color: Color):
+        super().__init__(PieceType.KING, color)
+
+
 class Board:
     """
     Represent a chessboard
@@ -66,14 +112,13 @@ class Board:
 
     def __str__(self) -> str:
         # replace None with empty character
-        buffer = [n if n is not None else ' ' for n in self._board]
+        rows = [str(n) if n is not None else '-' for n in self._board]
         # chunk list into 8 pieces and join togehter as string
-        buffer = [''.join(buffer[n*8:(n+1)*8]) for n in range(8)]
-        # add row numbers to board
-        buffer = [''.join(map(str, i)) for i in zip(reversed(self._rows), buffer)]
-        # add column names to board
-        buffer.append(''.join([' '] + self._columns))
-        return '\n'.join(buffer)
+        rows = [rows[i:i+8]  for i in range(0, len(rows), 8)]
+        # reverse list to match match prefered chess board view
+        rows = rows[::-1]
+
+        return '\n'.join([' '.join(n) for n in rows])
 
     def __init_board(self, fen: str) -> None:
         """
@@ -91,14 +136,31 @@ class Board:
                 if n.isnumeric():
                     buffer.extend([None for p in range(int(n))])
                 else:
-                    buffer.append(n)
+                    color = Color.WHITE if n.isupper() else Color.BLACK
+
+                    if n in 'Rr':
+                        buffer.append(Rook(color))
+                    elif n in 'Nn':
+                        buffer.append(Knight(color))
+                    elif n in 'Bb':
+                        buffer.append(Bishop(color))
+                    elif n in 'Qq':
+                        buffer.append(Queen(color))
+                    elif n in 'Kk':
+                        buffer.append(King(color))
+                    elif n in 'Pp':
+                        buffer.append(Pawn(color))
+                    else:
+                        raise ValueError
+
             board.append(buffer)
 
         board.reverse()
         for n in board:
             self._board.extend(n)
 
-    def get_square(self, square: str):
+
+    def get_square(self, square: str) -> str:
         """
         Return figure of the given square
         """
@@ -119,28 +181,5 @@ class Board:
         list_index = [self._squares[n] for n in self._squares.keys() if column in n]
         return [self._board[n] for n in list_index]
 
-
-class Piece(ABC):
-    """
-    Abstract class for chess figures
-    """
-    def __init__(self, color: Color):
-        self.color = color
-
-class Pawn(Piece):
-    pass
-
-class Rook(Piece):
-    pass
-
-class Bishop(Piece):
-    pass
-
-class Knight(Piece):
-    pass
-
-class Queen(Piece):
-    pass
-
-class King(Piece):
-    pass
+    def get_pieces(self, piece:PieceType, color: Color=None) -> List[Piece]:
+        return [n for n in self._board if n.type == piece and n.color == color]
